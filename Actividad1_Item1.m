@@ -10,12 +10,11 @@ C = 2.2e-6; % Capacitancia [F]
 % Matrices del sistema en variables de estado
 A = [-R/L, -1/L; 1/C, 0];
 B = [1/L; 0];
-C_il = [1, 0]; % Salida: IL (primera variable de estado)
+C_i = [1, 0]; % Salida: I (primera variable de estado)
 C_vc = [0, 1]; % Salida: VC (segunda variable de estado)
 C_vr = [R, 0]; % Salida: VR (IL*R)
-D = [0];
 
-% La matriz C se da así dado que el vector de estados es [IL VC]
+% La matriz C se da así dado que el vector de estados es [I VC]
 
 % Tiempo de simulación con 10 ms de entrada 0V
 t = 0:1e-4:0.2;
@@ -28,9 +27,9 @@ u(t > 0.01) = 12*(-1).^(floor((t(t > 0.01) - 0.01)/0.01));
 % se transforma en una secuencia de "1" y "-1" que le dan el signo a "u".
 
 % Almacenamos valores de cada salida en función del tiempo y la excitación
-[y_vc, t_out] = lsim(ss(A, B, C_vc, D), u, t); % VC
-[y_il, ~] = lsim(ss(A, B, C_il, D), u, t); % IL
-[y_vr, ~] = lsim(ss(A, B, C_vr, D), u, t); % VR
+[y_vc, t_out] = lsim(ss(A, B, C_vc), u, t); % VC
+[y_i, ~] = lsim(ss(A, B, C_i), u, t); % I
+[y_vr, ~] = lsim(ss(A, B, C_vr), u, t); % VR
 
 % La función "ss" crea un objeto de espacio de estados basado en las
 % matrices de su argumento.
@@ -40,7 +39,7 @@ u(t > 0.01) = 12*(-1).^(floor((t(t > 0.01) - 0.01)/0.01));
 figure;
 
 subplot(4, 1, 1);
-plot(t_out, u); % Grafica la entrada
+plot(t_out, u); % Grafica la tensión de entrada
 title('Entrada: Tensión aplicada');
 xlabel('Tiempo (s)');
 ylabel('Voltaje (V)');
@@ -48,21 +47,21 @@ grid on;
 
 subplot(4, 1, 2);
 plot(t_out, y_vc); % Grafica el voltaje sobre el capacitor
-title('Voltaje en el capacitor (VC)');
+title('Voltaje en el capacitor');
 xlabel('Tiempo (s)');
 ylabel('Voltaje (V)');
 grid on;
 
 subplot(4, 1, 3);
-plot(t_out, y_il); % Grafica la corriente sobre el inductor
-title('Corriente en el inductor (i_L)');
+plot(t_out, y_i); % Grafica la corriente en la malla
+title('Corriente en la malla');
 xlabel('Tiempo (s)');
 ylabel('Corriente (A)');
 grid on;
 
 subplot(4, 1, 4);
 plot(t_out, y_vr); % Grafica la tensión sobre la resistencia
-title('Caída de tensión en la resistencia (v_R)');
+title('Caída de tensión en la resistencia');
 xlabel('Tiempo (s)');
 ylabel('Voltaje (V)');
 grid on;
