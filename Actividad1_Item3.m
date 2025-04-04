@@ -9,8 +9,7 @@ tabla = 'Curvas_Medidas_RLC_2025.xlsx';
 data = xlsread(tabla, 1);
 t = data(:, 1); % Tiempo
 I_original = data(:, 2); % Corriente en el circuito
-VC_original = data(:, 3);
-Vin_original = data(:, 4);
+Vin_original = data(:, 4); % Tensión de excitación
 
 % Ploteo los datos originales de las tablas
 subplot(2, 1, 1);
