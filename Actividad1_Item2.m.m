@@ -45,7 +45,7 @@ grid on;
 % asemejándola a la forma FT = K*(T3*s + 1)/((T1*s + 1)*(T2*s + 1)).
 
 % Para eso debemos fijar 3 puntos:
-t_aux = 5.5e-4; % Será nuestro t1
+t_aux = 2.2e-4; % Será nuestro t1
 
 % Se alineará "t_aux" con los valores de "t" originales sumando "delay", y se
 % busca el índice con mínimo valor de diferencia, devolviendo aquel donde
@@ -63,16 +63,20 @@ t2 = t(lugar) - delay;
 y_t3 = VC_original(lugar);
 t3 = t(lugar) - delay;
 
+% Luego de obtener los puntos y sus valores en verdadera magnitud, procedemos
+% a calcular los valores de ki normalizados a la altura del escalón, ya que el
+% método de Chen aplica para un escalón unitario.
+
 StepAmplitude = 12;
 K = 1;
 k1 = (1/StepAmplitude)*y_t1/K - 1;
 k2 = (1/StepAmplitude)*y_t2/K - 1;
 k3 = (1/StepAmplitude)*y_t3/K - 1;
 
-b = 4*k1^3*k3 - 3*k1^2*k2^2 - 4*k2^3 + k3^2 + 6*k1*k2*k3
+b = 4*(k1^3)*k3 - 3*(k1^2)*(k2^2) - 4*(k2^3) + k3^2 + 6*k1*k2*k3
 a1 = (k1*k2 + k3 - sqrt(b))/(2*(k1^2 + k2))
 a2 = (k1*k2 + k3 + sqrt(b))/(2*(k1^2 + k2))
-beta = (2*k1^3 + 3*k1*k2 + k3 - sqrt(b))/(sqrt(b))
+beta = (k1+a2)/(a1-a2)
 
 T1 = (-t1/log(a1))
 T2 = (-t1/log(a2))
@@ -81,8 +85,8 @@ T1 = real(T1) % Se tomaría la parte real ya que vimos que la respuesta
 T2 = real(T2) % no es subamortiguada, sin embargo los polos según los
 T3 = real(T3) % puntos elegidos ya son reales.
 
-% Despreciando el cero, la FT inferida nos queda de la siguiente manera:
-Sys_Model_Aux = K/((s*T1 + 1)*(s*T2 + 1))
+% Por lo tanto, la FT nos queda de la siguiente manera
+Sys_Model_Aux = K*(s*T3 + 1)/((s*T1 + 1)*(s*T2 + 1))
 Sys_Model = step(12*Sys_Model_Aux, t_resp);
 
 % Comparamos la respuesta inferida con los valores de la tabla
@@ -126,4 +130,3 @@ legend('Inferida por método de Chen', 'Modelo con RLC', 'Original');
 grid on;
 
 disp('Terminado');
-
