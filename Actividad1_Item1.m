@@ -55,14 +55,13 @@ u(t > 0.01) = 12*(-1).^(floor((t(t > 0.01) - 0.01)/0.01));
 % periodos de 10 ms que ocurren y de esa manera el (-1) se vuelve una secuencia
 % de "1" y "-1", ya que el floor convierte el exponente en valores enteros.
 
-% Le damos valores a la salida y las variables de estado en cada punto
 for i = 1:(t_sim/paso) - 1;
-  % Variables de estado
+  % Modelamos el sistema según las ecuaciones de estado dadas con las matrices.
   x_punto = A*(x - x0) + B*u(i);
   x = x + x_punto*paso; % Integración de Euler
   y = C*x;
 
-  % Salidas
+  % Salida y variables de estado
   VR(i+1) = y(1);
   I(i+1) = x(1);
   VC(i+1) = x(2);
