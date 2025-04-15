@@ -9,7 +9,8 @@ tabla = 'Curvas_Medidas_RLC_2025.xlsx';
 data = xlsread(tabla, 1);
 t = data(:, 1); % Tiempo
 I_original = data(:, 2); % Corriente en el circuito
-Vin_original = data(:, 4); % Tensión de excitación
+VC_original = data(:, 3);
+Vin_original = data(:, 4);
 
 % Ploteo los datos originales de las tablas
 subplot(2, 1, 1);
@@ -26,17 +27,13 @@ xlabel('Tiempo (s)');
 ylabel('Corriente (A)');
 grid on;
 
+% Definimos paso y tiempo de simulación iguales a los de la tabla:
+t_sim = 0.2;
+paso = 0.00001;
+
 % Definimos la función de excitación
-u = zeros(size(t)); % Inicializar la entrada con ceros
-indices_u = find(t > 0.01);
-u(indices_u) = 12*(-1).^(floor((t(indices_u)/0.05)));
-
-% Interpolar la señal de excitación u(t)
-u_interp = interp1(t, u, t, 'previous');
-
-% Esta ultima linea toma los puntos de "u" en los valores de "t" encontrados
-% en la tabla, de manera que se puedan simular y graficar conjuntamente las
-% respuestas de corriente y así comparar ambas curvas
+u = linspace(0, 0, t_sim/paso); % Inicializar la entrada con ceros
+u(t > 0.01) = 12*(-1).^(floor((t(t > 0.01)/0.05)));
 
 % La función de transferencia del sistema con los parámetros calculados,
 % tomando la corriente como salida, se desarrolla a continuación:
@@ -49,7 +46,7 @@ C = 2.2787*10^(-6); % [F]
 %         FT = I/V_in = 1/(sL + R + 1/(sC))
 
 Sys_Model = 1/(s*L + R + 1/(s*C))
-[I_model, t] = lsim(Sys_Model, u_interp, t);
+[I_model, t] = lsim(Sys_Model, u, t);
 
 % Se plotean los datos de la tabla junto con la corriente del modelo inferido
 % para comparar la similitud entre ambos
@@ -60,8 +57,8 @@ plot(t, I_model, 'r', 'DisplayName', 'Respuesta del Modelo');
 xlabel('Tiempo (s)');
 ylabel('Corriente (A)');
 title('Comparación de la Respuesta Tabulada y del Modelo');
+legend('Respuesta Tabulada', 'Respuesta del Modelo')
 xlim([0.05, max(t)]);
 grid on;
-
 
 disp("Terminado");
