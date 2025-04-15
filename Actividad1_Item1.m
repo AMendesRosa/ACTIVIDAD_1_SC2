@@ -31,8 +31,8 @@ tR = log(0.95)/max(polos)
 tL = log(0.05)/min(polos)
 
 % Para ver varias repeticiones de la respuesta del sistema, tomamos
-% un valor grande de tiempo de simulación. Mientras que el paso
-% será al menos 10 veces menor al tR
+% un valor de tiempo de simulación varias veces mayor a tL. 
+% Mientras que el paso será al menos 10 veces menor al tR.
 paso = 1e-6;
 t_sim = 0.2;
 
