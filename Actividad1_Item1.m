@@ -1,6 +1,7 @@
 % Actividad 1 - Ítem 1
 close all; clear all; clc
 pkg load control
+pkg load signal
 
 % Parámetros del circuito
 R = 220; % Resistencia [Ω]
@@ -10,58 +11,89 @@ C = 2.2e-6; % Capacitancia [F]
 % Matrices del sistema en variables de estado
 A = [-R/L, -1/L; 1/C, 0];
 B = [1/L; 0];
-C_i = [1, 0]; % Salida: I (primera variable de estado)
-C_vc = [0, 1]; % Salida: VC (segunda variable de estado)
-C_vr = [R, 0]; % Salida: VR (IL*R)
-
+C = [R, 0];
+D = [0];
 % La matriz C se da así dado que el vector de estados es [I VC]
 
+% Ahora sacamos la funcion de transferencia según las matrices
+[num, den] = ss2tf(A, B, C, D);
+G = tf(num, den)
+
+% Calculamos los polos de la FT
+polos = pole(G);
+
+% Estimamos el paso que permita observar las dinámicas rápidas
+% según el polo más grande
+tR = log(0.95)/max(polos)
+
+% Y para estimar el tiempo de simulación utilizamos el polo de menor
+% tamaño, y así permita ver la dinámica lenta
+tL = log(0.05)/min(polos)
+
+% Para ver varias repeticiones de la respuesta del sistema, tomamos
+% un valor grande de tiempo de simulación. Mientras que el paso
+% será al menos 10 veces menor al tR
+paso = 1e-6;
+t_sim = 0.2;
+
 % Tiempo de simulación con 10 ms de entrada 0V
-t = 0:1e-4:0.2;
-u = zeros(size(t)); % Inicializar la entrada con ceros
+t = linspace(0, t_sim, t_sim/paso);
+u = linspace(0, 0, t_sim/paso); % Inicializar la entrada con ceros
+
+x0 = [0 0]'; % Planteamos el punto de operación
+
+I(1) = 0;
+VC(1) = 0;
+x = [I(1) VC(1)]'; % Planteamos las condiciones iniciales
+
+VR(1) = 0; % Esta es la salida "y" del sistema
+
+% Se define "u" a partir de t = 0.01s con saltos entre 12 V y -12 V cada 10 ms
 u(t > 0.01) = 12*(-1).^(floor((t(t > 0.01) - 0.01)/0.01));
 
-% Los cambios de signo de "u" son gracias al factor (-1) y su exponente, éste
-% hace un recuento de los periodos de 10 ms que van ocurriendo y de esa manera
-% el factor (-1), debido a que floor convierte el exponente en valores enteros,
-% se transforma en una secuencia de "1" y "-1" que le dan el signo a "u".
+% Los cambios de "u" se deben a que el exponente va haciendo un recuento de los
+% periodos de 10 ms que ocurren y de esa manera el (-1) se vuelve una secuencia
+% de "1" y "-1", ya que el floor convierte el exponente en valores enteros.
 
-% Almacenamos valores de cada salida en función del tiempo y la excitación
-[y_vc, t_out] = lsim(ss(A, B, C_vc), u, t); % VC
-[y_i, ~] = lsim(ss(A, B, C_i), u, t); % I
-[y_vr, ~] = lsim(ss(A, B, C_vr), u, t); % VR
+% Le damos valores a la salida y las variables de estado en cada punto
+for i = 1:(t_sim/paso) - 1;
+  % Variables de estado
+  x_punto = A*(x - x0) + B*u(i);
+  x = x + x_punto*paso; % Integración de Euler
+  y = C*x;
 
-% La función "ss" crea un objeto de espacio de estados basado en las
-% matrices de su argumento.
-% Se utiliza "~" ya que los mismos valores se guardan en "t_out"
+  % Salidas
+  VR(i+1) = y(1);
+  I(i+1) = x(1);
+  VC(i+1) = x(2);
+end
 
-% Graficar resultados
+%Finalmente grafico la entrada, salida y variables de estado
 figure;
-
-subplot(4, 1, 1);
-plot(t_out, u); % Grafica la tensión de entrada
-title('Entrada: Tensión aplicada');
+subplot(4,1,1);
+plot(t, u);
+title('Tension de entrada');
 xlabel('Tiempo (s)');
 ylabel('Voltaje (V)');
-grid on;
+grid on
 
-subplot(4, 1, 2);
-plot(t_out, y_vc); % Grafica el voltaje sobre el capacitor
-title('Voltaje en el capacitor');
+subplot(4,1,2);
+plot(t, VC);
+title('Tension en el capacitor');
 xlabel('Tiempo (s)');
 ylabel('Voltaje (V)');
-grid on;
+grid on
 
-subplot(4, 1, 3);
-plot(t_out, y_i); % Grafica la corriente en la malla
+subplot(4,1,3);
+plot(t, I);
 title('Corriente en la malla');
 xlabel('Tiempo (s)');
 ylabel('Corriente (A)');
 grid on;
 
-subplot(4, 1, 4);
-plot(t_out, y_vr); % Grafica la tensión sobre la resistencia
-title('Caída de tensión en la resistencia');
+subplot(4,1,4);
+plot(t, VR);
+title('Tension en la resistencia');
 xlabel('Tiempo (s)');
 ylabel('Voltaje (V)');
 grid on;
