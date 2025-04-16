@@ -50,7 +50,7 @@ I(1) = 0;
 VC(1) = 0;
 x = [I(1) VC(1)]'; % Planteamos las condiciones iniciales
 
-% Le damos valores a la salida y las variables de estado en cada punto
+% Le damos valores a las variables de estado en cada punto
 for i = 1:19500;
   % Ecuación
   x_punto = A*(x - x0) + B*Vin_original(i);
