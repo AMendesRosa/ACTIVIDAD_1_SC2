@@ -1,16 +1,15 @@
 % Actividad 1 - Ítem 3
 close all; clear all; clc;
-pkg load io
+pkg load signal
 pkg load control
 s = tf('s');
 
 % Importar datos desde el archivo Excel
 tabla = 'Curvas_Medidas_RLC_2025.xlsx';
 data = xlsread(tabla, 1);
-t = data(:, 1); % Tiempo
-I_original = data(:, 2); % Corriente en el circuito
-VC_original = data(:, 3);
-Vin_original = data(:, 4);
+t = data(501:end, 1); % Tiempo
+I_original = data(501:end, 2); % Corriente en el circuito
+Vin_original = data(501:end, 4);
 
 % Ploteo los datos originales de las tablas
 subplot(2, 1, 1);
@@ -27,13 +26,8 @@ xlabel('Tiempo (s)');
 ylabel('Corriente (A)');
 grid on;
 
-% Definimos paso y tiempo de simulación iguales a los de la tabla:
-t_sim = 0.2;
+% Definimos paso igual a los datos de la tabla:
 paso = 0.00001;
-
-% Definimos la función de excitación
-u = linspace(0, 0, t_sim/paso); % Inicializar la entrada con ceros
-u(t > 0.01) = 12*(-1).^(floor((t(t > 0.01)/0.05)));
 
 % La función de transferencia del sistema con los parámetros calculados,
 % tomando la corriente como salida, se desarrolla a continuación:
@@ -41,24 +35,39 @@ R = 220; % [Ω]
 L = 4.155*10^(-3); % [Hy]
 C = 2.2787*10^(-6); % [F]
 
-%               V_in = VR + VL + VC
-%             V_in = (R + sL + 1/(sC))*I
-%         FT = I/V_in = 1/(sL + R + 1/(sC))
+% Definimos la FT según las matrices del sistema
+A = [-R/L, -1/L; 1/C, 0];
+B = [1/L; 0];
+C = [R, 0];
+D = [0];
 
-Sys_Model = 1/(s*L + R + 1/(s*C))
-[I_model, t] = lsim(Sys_Model, u, t);
+[num, den] = ss2tf(A, B, C, D);
+G = tf(num, den)
+
+x0 = [0 0]'; % Planteamos el punto de operación
+
+I(1) = 0;
+VC(1) = 0;
+x = [I(1) VC(1)]'; % Planteamos las condiciones iniciales
+
+% Le damos valores a la salida y las variables de estado en cada punto
+for i = 1:19500;
+  % Ecuación
+  x_punto = A*(x - x0) + B*Vin_original(i);
+  x = x + x_punto*paso; % Integración de Euler
+
+  % Variable de estado de interés
+  I(i+1) = x(1);
+end
 
 % Se plotean los datos de la tabla junto con la corriente del modelo inferido
 % para comparar la similitud entre ambos
 figure;
-plot(t, I_original, 'b', 'DisplayName', 'Respuesta Tabulada');
-hold on;
-plot(t, I_model, 'r', 'DisplayName', 'Respuesta del Modelo');
+plot(t, I_original, 'b-', t, I, "r-");
 xlabel('Tiempo (s)');
 ylabel('Corriente (A)');
-title('Comparación de la Respuesta Tabulada y del Modelo');
+title('Comparación de las respuestas de la corriente en la malla');
 legend('Respuesta Tabulada', 'Respuesta del Modelo')
-xlim([0.05, max(t)]);
 grid on;
 
 disp("Terminado");
