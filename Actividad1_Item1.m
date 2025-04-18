@@ -19,13 +19,14 @@ D = [0];
 [num, den] = ss2tf(A, B, C, D);
 G = tf(num, den)
 
-% Calculamos los polos de la FT y tomamos su parte real
+% Calculamos los polos de la FT
 polos = pole(G)
-realPolos = real(polos);
 
-% Definimos el polo más cercano y más lejano al origen
-polo_cercano = min(realPolos)
-polo_lejano = max(realPolos)
+% Usamos el valor absoluto de la parte real para comparar modulos y se
+% establece el polo de mayor y menor módulo:
+mod_polos = abs(real(polos));
+polo_cercano = min(mod_polos)
+polo_lejano = max(mod_polos)
 
 % Estimamos el tiempo de muestreo que permita observar las dinámicas rápidas
 % según el polo más lejano del origen
@@ -37,7 +38,7 @@ tL = -log(0.05)/abs(polo_cercano)
 
 % Para ver varias repeticiones de la respuesta del sistema, tomamos
 % un valor mayor de tiempo de simulación. Mientras que el tiempo de muestreo
-% será al menos 10 veces menor al tR
+% debe ser algunas veces menor al tR
 t_muestreo = 1e-5;
 t_sim = 0.2;
 
