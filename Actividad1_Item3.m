@@ -2,7 +2,6 @@
 close all; clear all; clc;
 pkg load signal
 pkg load control
-s = tf('s');
 
 % Importar datos desde el archivo Excel
 tabla = 'Curvas_Medidas_RLC_2025.xlsx';
@@ -26,14 +25,14 @@ xlabel('Tiempo (s)');
 ylabel('Corriente (A)');
 grid on;
 
-% Definimos paso igual a los datos de la tabla:
-paso = 0.00001;
+% Definimos tiempo de muestreo igual al paso de la tabla:
+t_muestreo = 0.00001;
 
 % La función de transferencia del sistema con los parámetros calculados,
-% tomando la corriente como salida, se desarrolla a continuación:
+% se desarrolla a continuación:
 R = 220; % [Ω]
-L = 4.155*10^(-3); % [Hy]
-C = 2.2787*10^(-6); % [F]
+L = 1.9591e-3; % [Hy]
+C = 2.2306e-6; % [F]
 
 % Definimos la FT según las matrices del sistema
 A = [-R/L, -1/L; 1/C, 0];
@@ -52,9 +51,9 @@ x = [I(1) VC(1)]'; % Planteamos las condiciones iniciales
 
 % Le damos valores a las variables de estado en cada punto
 for i = 1:19500;
-  % Ecuación
+  % Ecuación de estado
   x_punto = A*(x - x0) + B*Vin_original(i);
-  x = x + x_punto*paso; % Integración de Euler
+  x = x + x_punto*t_muestreo; % Integración de Euler
 
   % Variable de estado de interés
   I(i+1) = x(1);
