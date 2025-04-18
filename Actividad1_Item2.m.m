@@ -19,10 +19,10 @@ xlabel('Tiempo (s)');
 ylabel('Voltaje (V)');
 grid on;
 
-delay = 0.01;
+delay = 0.01; % Defino el retardo observado en la curva
 
-% Extraigo los valores de "t" y "VC" para t = 0.01 hasta t = 0.025 (donde
-% ya se estabilizó la respuesta) para así eliminar el retardo del gráfico
+% Extraigo los valores de "t" y "VC" desde t = delay hasta t = 0.025 (respuesta
+% ya estabilizada) para así eliminar el retardo del gráfico
 indices = find(t >= 0.01 & t <= 0.025);
 t_resp = t(indices) - delay;
 VC_resp = VC_original(indices);
@@ -35,22 +35,21 @@ xlabel('Tiempo (s)');
 ylabel('Voltaje (V)');
 grid on;
 
-% La función de transferencia del sistema VC/V_in es:
-%             V_in = (R + sL + 1/(sC))*I
-%           VC = 1/(sC)*V_in/(R+sL+1/(sC))
 %         FT = VC/V_in = 1/(s^(2)*LC + sRC + 1)
 
-% Por la forma de la curva tomaremos el caso que tiene polos reales y
-% distintos, y para buscar la forma de la FT usaremos el método de Chen,
-% asemejándola a la forma FT = K*(T3*s + 1)/((T1*s + 1)*(T2*s + 1)).
+% Sabiendo que es de segundo orden, por la forma de la curva tomaremos
+% el caso que tiene polos reales y distintos, y para calcular los polos
+% de la FT usaremos el método de Chen, con la forma:
+
+%         FT = K*(T3*s + 1)/((T1*s + 1)*(T2*s + 1)).
 
 % Para eso debemos fijar 3 puntos:
 t_aux = 2.2e-4; % Será nuestro t1
 
-% Se alineará "t_aux" con los valores de "t" originales sumando "delay", y se
-% busca el índice con mínimo valor de diferencia, devolviendo aquel donde
-% ocurre "t_aux", y usarlo para así poder tanto conocer el valor de salida
-% en la curva, como también obtener los puntos necesarios para el método:
+% Como ese valor está sin el retardo, se alineará con los valores de "t" al
+% sumar el delay, y se busca el índice con mínimo valor de diferencia con "t",
+% devolviendo el índice donde ocurre "t_aux", para poder conocer el valor de
+% salida en la curva, como también definir los puntos necesarios para el método:
 [~, lugar] = min(abs(t_aux + delay - t));
 y_t1 = VC_original(lugar);
 t1 = t(lugar) - delay;
@@ -63,15 +62,18 @@ t2 = t(lugar) - delay;
 y_t3 = VC_original(lugar);
 t3 = t(lugar) - delay;
 
-% Luego de obtener los puntos y sus valores en verdadera magnitud, procedemos
-% a calcular los valores de ki normalizados a la altura del escalón, ya que el
-% método de Chen aplica para un escalón unitario.
+% Luego de obtener los puntos y sus valores en verdadera magnitud, tomamos un
+% último punto que donde la salida esté en estado de régimen, para así con este
+% normalizar la altura de la entrada y calcular los valores de ki correctos,
+% ya que el método de Chen aplica para un escalón unitario.
 
-StepAmplitude = 12;
+[~, lugar] = min(abs(0.025 + delay - t));
+yss = VC_original(lugar);
+
 K = 1;
-k1 = (1/StepAmplitude)*y_t1/K - 1;
-k2 = (1/StepAmplitude)*y_t2/K - 1;
-k3 = (1/StepAmplitude)*y_t3/K - 1;
+k1 = (1/yss)*y_t1/K - 1;
+k2 = (1/yss)*y_t2/K - 1;
+k3 = (1/yss)*y_t3/K - 1;
 
 b = 4*(k1^3)*k3 - 3*(k1^2)*(k2^2) - 4*(k2^3) + k3^2 + 6*k1*k2*k3
 a1 = (k1*k2 + k3 - sqrt(b))/(2*(k1^2 + k2))
@@ -81,12 +83,9 @@ beta = (k1+a2)/(a1-a2)
 T1 = (-t1/log(a1))
 T2 = (-t1/log(a2))
 T3 = (beta*(T1 - T2) + T1)
-T1 = real(T1) % Se tomaría la parte real ya que vimos que la respuesta
-T2 = real(T2) % no es subamortiguada, sin embargo los polos según los
-T3 = real(T3) % puntos elegidos ya son reales.
 
 % Por lo tanto, la FT nos queda de la siguiente manera
-Sys_Model_Aux = K*(s*T3 + 1)/((s*T1 + 1)*(s*T2 + 1))
+Sys_Model_Aux = K/((s*T1 + 1)*(s*T2 + 1))
 Sys_Model = step(12*Sys_Model_Aux, t_resp);
 
 % Comparamos la respuesta inferida con los valores de la tabla
@@ -118,7 +117,7 @@ R = R_s
 C = C_s
 
 % Armamos el modelo de FT con los valores de R, L y C calculados
-RLC_Model = step(StepAmplitude*1/(s^(2)*L*C + s*R*C + 1), t_resp);
+RLC_Model = step(12*1/(s^(2)*L*C + s*R*C + 1), t_resp);
 
 % Graficamos la respuesta a un escalon de 12V en los 3 modelos para comparar
 figure;
