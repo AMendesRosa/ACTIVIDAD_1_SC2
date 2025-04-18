@@ -28,6 +28,11 @@ mod_polos = abs(real(polos));
 polo_cercano = min(mod_polos)
 polo_lejano = max(mod_polos)
 
+% Teniendo en cuenta que el tiempo de establecimiento para un sistema de
+% segundo orden es t=4/(psita.wn), siendo el denominador la parte real
+% del polo más dominante, tenemos que el sistema no llegará a establecerse
+% antes de que la tensión de entrada cambie de signo.
+
 % Estimamos el tiempo de muestreo que permita observar las dinámicas rápidas
 % según el polo más lejano del origen
 tR = -log(0.95)/abs(polo_lejano)
