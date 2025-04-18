@@ -51,7 +51,7 @@ x = [I(1) VC(1)]'; % Planteamos las condiciones iniciales
 
 % Le damos valores a las variables de estado en cada punto
 for i = 1:19500;
-  % Ecuación de estado
+  % Ecuación
   x_punto = A*(x - x0) + B*Vin_original(i);
   x = x + x_punto*t_muestreo; % Integración de Euler
 
