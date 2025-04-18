@@ -67,7 +67,7 @@ for i = 1:(t_sim/t_muestreo) - 1;
   y = C*x;
 
   % Salidas y variables de estado
-  VR(i+1) = y(1);
+  VR(i+1) = y;
   I(i+1) = x(1);
   VC(i+1) = x(2);
 end
