@@ -37,6 +37,10 @@ polo_lejano = max(mod_polos)
 % según el polo más lejano del origen
 tR = -log(0.95)/abs(polo_lejano)
 
+% También consideramos el periodo de oscilación del sistema amortiguado y lo
+% dividimos entre 100 puntos, es otra forma de determinar un tiempo de muestreo
+Td = abs((2*pi/imag(min(polos)))/100)
+
 % Y para estimar el tiempo de simulación utilizamos el polo más cercano
 % al origen, y así permita abarcar toda la dinámica lenta
 tL = -log(0.05)/abs(polo_cercano)
@@ -44,7 +48,7 @@ tL = -log(0.05)/abs(polo_cercano)
 % Para ver varias repeticiones de la respuesta del sistema, tomamos
 % un valor mayor de tiempo de simulación. Mientras que el tiempo de muestreo
 % debe ser algunas veces menor al tR
-t_muestreo = 1e-5;
+t_muestreo = min(tR/3, Td) % Tomamos el menor entre ellos;
 t_sim = 0.2;
 
 % Tiempo de simulación con 10 ms de entrada 0V
@@ -63,7 +67,6 @@ VC(1) = 0;
 VR(1) = 0; % Esta es la salida "y" del sistema
 x = [I(1) VC(1)]'; % Planteamos las condiciones iniciales
 x0 = [0 0]'; % Planteamos el punto de operación
-
 
 % Le damos valores a la salida y las variables de estado en cada punto
 for i = 1:(t_sim/t_muestreo) - 1;
