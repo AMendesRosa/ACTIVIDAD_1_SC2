@@ -46,8 +46,8 @@ Td = abs((2*pi/imag(min(polos)))/100)
 tL = -log(0.05)/abs(polo_cercano)
 
 % Para ver varias repeticiones de la respuesta del sistema, tomamos
-% un valor mayor de tiempo de simulación. Mientras que el tiempo de muestreo
-% debe ser algunas veces menor al tR
+% un valor mayor de tiempo de simulación. Mientras que el tiempo de muestreo se toma
+% del mínimo entre las opciones, debe ser algunas veces menor al tR
 t_muestreo = min(tR/3, Td) % Tomamos el menor entre ellos;
 t_sim = 0.2;
 
