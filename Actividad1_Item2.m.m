@@ -10,6 +10,7 @@ data = xlsread(tabla, 1);
 t = data(:, 1); % Tiempo
 I = data(:, 2); % Corriente en el circuito
 VC_original = data(:, 3); % Voltaje en el capacitor
+VR = data(:, 5); % Tensión en la resistencia, salida
 
 % Ploteo los datos de la tabla (sólo para VC) para ver el retardo
 figure;
@@ -107,7 +108,10 @@ RLC_Model_Symb = 1/(s_s^(2)*L_s*C_s + s_s*R_s*C_s + 1)
 % Igualamos denominadores y asignamos valores a las variables para calcular
 eq1 = L_s*C_s == T1_s*T2_s;
 eq2 = T1_s + T2_s == C_s*R_s;
-R_s = 220;
+
+% Para definir R se dividirá VR (salida) por la corriente, (partiendo de
+% condiciones iniciales nulas), esto en cualquier punto dará el valor de R:
+R_s = VR(3e3)/I(3e3); % VR/I
 T1_s = T1;
 T2_s = T2;
 
