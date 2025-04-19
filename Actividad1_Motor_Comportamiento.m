@@ -55,7 +55,7 @@ for i = 1:(t_sim/t_muestreo) - 1;
   end
 
   if (t(i) > 0.06)
-    TL(i) = 5e-4;
+    TL(i) = 0.8e-3;
   end
   if (t(i) > 0.12)
     TL(i) = 0;
@@ -75,35 +75,29 @@ end
 %Finalmente grafico la entrada, salida y variables de estado
 figure;
 subplot(4,1,1);
-plot(t, u, "linewidth", 1.2);
-title('Tension de entrada');
-xlabel('Tiempo (s)');
-ylabel('Voltaje (V)');
-grid on
-
-subplot(4,1,2);
 plot(t, Wr, "linewidth", 1.2);
 title('Velocidad angular');
 xlabel('Tiempo (s)');
-ylabel('Radianes por segundo (rad/s)');
+ylabel('Vel. angular (rad/s)');
 grid on
 
-subplot(4,1,3);
+subplot(4,1,2);
 plot(t, Ia, "linewidth", 1.2);
 title('Corriente en la armadura');
 xlabel('Tiempo (s)');
 ylabel('Corriente (A)');
 grid on;
 
-subplot(4,1,4);
+subplot(4,1,3);
 plot(t, TL, "linewidth", 1.2);
 title('Torque de carga');
 xlabel('Tiempo (s)');
+ylabel("Torque (N.m");
 grid on;
 
-
-
-
-
-
-
+subplot(4,1,4);
+plot(t, Tita, "linewidth", 1.2);
+title('Posicion angular');
+ylabel("Pos. Angular (Rad)");
+xlabel('Tiempo (s)');
+grid on;
