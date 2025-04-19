@@ -97,8 +97,6 @@ ylabel('Voltaje (V)');
 legend('Inferida por el método de Chen', 'Original');
 grid on;
 
-% Ahora se supondrá un valor de R = 220Ω, y se calculará L y C en base
-% a la función de transferencia que se encontró por el método de Chen
 pkg load symbolic
 syms s_s T1_s T2_s C_s R_s L_s real
 
