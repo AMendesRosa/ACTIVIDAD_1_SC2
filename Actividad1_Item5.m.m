@@ -89,7 +89,7 @@ t3_w = t(lugar) - delay1
 % último punto que donde la salida esté en estado de régimen, para así con este
 % normalizar la altura de la entrada y calcular los valores de ki correctos,
 % ya que el método de Chen aplica para un escalón unitario.
-yss_w = 7.63;
+yss_w = 7.625;
 
 % Se normaliza K dividiendolo por la altura del escalón, como así
 % también a los valores de salidas
@@ -120,10 +120,9 @@ ylabel('Vel. Angular (Rad/s)');
 legend('Inferida por el método de Chen', 'Original');
 grid on;
 
-% Ahora aplicaremos el mismo método para el comportamiento de Ia respecto
-% de Vin
+%CHEN IA/VA
 
-delay1 = 0.101; % Defino el retardo observado en la curva de Ia
+delay1 = 0.101; % Defino el retardo observado en la curva de Vin
 
 % Extraigo los valores de t y Wr desde t = delay hasta t = 0.7
 % (donde comienza el torque) para así eliminar el retardo del gráfico
@@ -131,7 +130,7 @@ indices1 = find(t >= 0.101 & t <= 0.7);
 t_resp1 = t(indices1) - delay1;
 Ia_resp1 = Ia_original(indices1);
 
-% Ploteo la respuesta de Ia a Vin
+% Ploteo la respuesta de Wr a Vin
 figure;
 plot(t_resp1, Ia_resp1);
 title('Velocidad angular (respuesta al escalón de 12V)');
@@ -139,11 +138,19 @@ xlabel('Tiempo (s)');
 ylabel('Vel. Angular (Rad/s)');
 grid on;
 
-% Tomamos la misma forma de ft:
+% Sabiendo que es de segundo orden, por la forma de la curva tomaremos
+% el caso que tiene polos reales y distintos, y para calcular los polos
+% de la FT usaremos el método de Chen, con la forma:
+
 %         FT = K*(T3*s + 1)/((T1*s + 1)*(T2*s + 1)).
 
+% Para eso debemos fijar 3 puntos:
 t_aux2 = 0.005; % Será nuestro t1
 
+% Como ese valor está sin el retardo, se alineará con los valores de "t" al
+% sumar el delay, y se busca el índice con mínimo valor de diferencia con "t",
+% devolviendo el índice donde ocurre "t_aux", para poder conocer el valor de
+% salida en la curva, como también definir los puntos necesarios para el método:
 [~, lugar] = min(abs(t_aux2 + delay1 - t));
 y_t1_2 = Ia_original(lugar);
 t1_2 = t(lugar) - delay1
@@ -156,9 +163,14 @@ t2_2 = t(lugar) - delay1
 y_t3_2 = Ia_original(lugar);
 t3_2 = t(lugar) - delay1
 
+% Luego de obtener los puntos y sus valores en verdadera magnitud, tomamos un
+% último punto que donde la salida esté en estado de régimen, para así con este
+% normalizar la altura de la entrada y calcular los valores de ki correctos,
+% ya que el método de Chen aplica para un escalón unitario.
 yss_2 = 0.04;
 
-% Se normaliza K y los valores de salidas
+% Se normaliza K dividiendolo por la altura del escalón, como así
+% también a los valores de salidas
 K_2 = yss_2/2;
 k1_2 = (y_t1_2/2)/K_2 - 1;
 k2_2 = (y_t2_2/2)/K_2 - 1;
@@ -186,13 +198,13 @@ ylabel('Corriente (A)');
 legend('Inferida por el método de Chen', 'Original');
 grid on;
 
-% Establecemos los parámetros calculados según lo explicado en el informe
+% Establecemos los parámetros calculados
 Ra = 2.4136
-Ki = 3.815
-J = 0.04009
-Bm = 0.02
-Km = 0.24946
-Laa = 5.2382e-3
+Ki = 0.274521
+J = 2.8221615e-3
+Bm = 0
+Km = 0.262123
+Laa = 5.283097e-3
 
 % Armo las matrices del espacio de estados según las ecuaciones de estado
 % y la ecuación de salida:
@@ -287,4 +299,3 @@ title('Torque de carga');
 ylabel("Torque (N.m)");
 xlabel('Tiempo (s)');
 grid on;
-
